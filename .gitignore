@@ -7,4 +7,4 @@
 /build
 /captures
 .idea
-/src/main/java/com/rahobbs/pictonary/Constants.java
+app/src/main/java/com/rahobbs/pictonary/Constants.java

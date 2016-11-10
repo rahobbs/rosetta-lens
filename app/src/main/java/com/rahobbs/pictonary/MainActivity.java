@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.sample.cloudvision;
+package com.rahobbs.pictonary;
 
 import android.Manifest;
 import android.content.DialogInterface;
@@ -53,7 +53,6 @@ import com.google.cloud.translate.Translate;
 import com.google.cloud.translate.Translate.TranslateOption;
 import com.google.cloud.translate.TranslateOptions;
 import com.google.cloud.translate.Translation;
-import com.rahobbs.pictonary.R;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -63,8 +62,8 @@ import java.util.List;
 
 import static com.rahobbs.pictonary.Constants.API_KEY;
 
+
 public class MainActivity extends AppCompatActivity {
-    private static final String CLOUD_VISION_API_KEY = API_KEY;
     public static final String FILE_NAME = "temp.jpg";
 
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -109,6 +108,12 @@ public class MainActivity extends AppCompatActivity {
 
         mImageDetails = (TextView) findViewById(R.id.image_details);
         mMainImage = (ImageView) findViewById(R.id.main_image);
+    }
+
+    /** Called when the user clicks the select language button */
+    public void launchLanguagePicker(View view) {
+        Intent intent = new Intent(this, LanguagePickerActivity.class);
+        startActivity(intent);
     }
 
     public void startGalleryChooser() {
@@ -195,7 +200,7 @@ public class MainActivity extends AppCompatActivity {
 
                     Vision.Builder builder = new Vision.Builder(httpTransport, jsonFactory, null);
                     builder.setVisionRequestInitializer(new
-                            VisionRequestInitializer(CLOUD_VISION_API_KEY));
+                            VisionRequestInitializer(API_KEY));
                     Vision vision = builder.build();
 
                     BatchAnnotateImagesRequest batchAnnotateImagesRequest =
@@ -290,7 +295,7 @@ public class MainActivity extends AppCompatActivity {
 
     public String translateText(String toTranslate) {
         // Instantiates a client
-        Translate translate = TranslateOptions.builder().apiKey(CLOUD_VISION_API_KEY).build().service();
+        Translate translate = TranslateOptions.builder().apiKey(API_KEY).build().service();
 
         // Translates some text into Russian
         Translation translation = translate.translate(

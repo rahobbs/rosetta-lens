@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">CloudVision</string>
+    <string name="app_name">Pictonary</string>
     <string name="action_settings">Settings</string>
     <string name="image_details_header">Details:</string>
     <string name="image_preview_header">Preview:</string>
@@ -10,4 +10,13 @@
     <string name="dialog_select_gallery">Gallery</string>
 
     <string name="image_picker_error">Something is wrong with that image. Pick a different one please.</string>
+    <string name="title_activity_language_picker">LanguagePickerActivity</string>
+
+    <string-array name="lang_array">
+        <item>es</item>
+        <item>fr</item>
+        <item>ja</item>
+        <item>ko</item>
+        <item>de</item>
+    </string-array>
 </resources>
