@@ -62,7 +62,6 @@ import java.util.List;
 
 import static com.rahobbs.pictonary.Constants.API_KEY;
 
-
 public class MainActivity extends AppCompatActivity {
     public static final String FILE_NAME = "temp.jpg";
 
@@ -113,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
     /** Called when the user clicks the select language button */
     public void launchLanguagePicker(View view) {
         Intent intent = new Intent(this, LanguagePickerActivity.class);
-        startActivity(intent);
+        startActivityForResult(intent, 1);
     }
 
     public void startGalleryChooser() {
