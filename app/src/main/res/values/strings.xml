@@ -18,5 +18,8 @@
         <item>ja</item>
         <item>ko</item>
         <item>de</item>
+        <item>zh-CN</item>
+        <item>ru</item>
+
     </string-array>
 </resources>

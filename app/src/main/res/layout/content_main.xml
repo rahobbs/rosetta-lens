@@ -12,34 +12,43 @@
                 tools:context=".MainActivity"
                 tools:showIn="@layout/activity_main">
 
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/target_lang_text"
+                android:hint="target language"
+                android:textAlignment="center"
+                android:paddingTop="8dp"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+
             <ImageView
                 android:id="@+id/main_image"
                 android:layout_width="match_parent"
                 android:layout_height="200dp"
-                android:scaleType="fitCenter"/>
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_aspect_ratio_black_24dp"/>
 
             <TextView
                 android:id="@+id/image_details"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
-                android:text="Use the floating action button to select an image."/>
-
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="select language"
-                android:onClick="launchLanguagePicker" />
+                android:textAlignment="center"
+                android:text="Select an image to get translations..."/>
 
         </LinearLayout>
-    </ScrollView>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_alignParentBottom="true">
+
+            </LinearLayout>
+
 </RelativeLayout>

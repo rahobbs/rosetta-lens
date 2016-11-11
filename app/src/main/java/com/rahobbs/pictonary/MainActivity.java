@@ -19,6 +19,7 @@ package com.rahobbs.pictonary;
 import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -74,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     private TextView mImageDetails;
+    private TextView mTargetLangLabel;
     private ImageView mMainImage;
 
     private String mTargetLanguage = "es";
@@ -85,8 +87,9 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        //Image selection FAB
+        FloatingActionButton imageFab = (FloatingActionButton) findViewById(R.id.imageFab);
+        imageFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
@@ -108,8 +111,21 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        //Language selection FAB
+        FloatingActionButton languageFab = (FloatingActionButton) findViewById(R.id.languageFab);
+        languageFab.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.colorPrimaryDark)));
+        languageFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                launchLanguagePicker(view);
+            }
+        });
+
         mImageDetails = (TextView) findViewById(R.id.image_details);
         mMainImage = (ImageView) findViewById(R.id.main_image);
+        mTargetLangLabel = (TextView) findViewById(R.id.target_lang_text);
+
+        mTargetLangLabel.setText("Currently translating to " + getLanguageLabel(mTargetLanguage));
     }
 
     /** Called when the user clicks the select language button */
@@ -150,6 +166,7 @@ public class MainActivity extends AppCompatActivity {
                 //Set Target Language
                 Log.e("target lang", data.getStringExtra("result"));
                 mTargetLanguage = data.getStringExtra("result");
+                mTargetLangLabel.setText("Currently translating to " + getLanguageLabel(mTargetLanguage));
             } else if (requestCode == GALLERY_IMAGE_REQUEST && resultCode == RESULT_OK) {
                 uploadImage(data.getData());
             } else if (requestCode == CAMERA_IMAGE_REQUEST && resultCode == RESULT_OK) {
@@ -287,7 +304,7 @@ public class MainActivity extends AppCompatActivity {
         List<EntityAnnotation> labels = response.getResponses().get(0).getLabelAnnotations();
         if (labels != null) {
             for (EntityAnnotation label : labels) {
-                message += (label.getDescription() + "=>" + translateText(label.getDescription()));
+                message += (label.getDescription() + " => " + translateText(label.getDescription()));
                 message += "\n";
 
             }
@@ -310,5 +327,18 @@ public class MainActivity extends AppCompatActivity {
         );
 
         return translation.translatedText();
+    }
+
+    public String getLanguageLabel(String languageCode){
+        switch(languageCode) {
+            case "es": return "Spanish";
+            case "fr": return "French";
+            case "ja": return "Japanese";
+            case "ko": return "Korean";
+            case "de": return "German";
+            case "zh-CN": return "Simplified Chinese";
+            case "ru": return "Russian";
+            default: return "Invalid language";
+        }
     }
 }
