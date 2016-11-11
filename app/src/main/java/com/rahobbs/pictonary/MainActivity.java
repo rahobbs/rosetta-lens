@@ -69,11 +69,14 @@ public class MainActivity extends AppCompatActivity {
     private static final int GALLERY_IMAGE_REQUEST = 1;
     public static final int CAMERA_PERMISSIONS_REQUEST = 2;
     public static final int CAMERA_IMAGE_REQUEST = 3;
+    public static final int LANGUAGE_PICKER_REQEUST = 4;
 
 
 
     private TextView mImageDetails;
     private ImageView mMainImage;
+
+    private String mTargetLanguage = "es";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
     /** Called when the user clicks the select language button */
     public void launchLanguagePicker(View view) {
         Intent intent = new Intent(this, LanguagePickerActivity.class);
-        startActivityForResult(intent, 1);
+        startActivityForResult(intent, LANGUAGE_PICKER_REQEUST);
     }
 
     public void startGalleryChooser() {
@@ -143,12 +146,15 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == GALLERY_IMAGE_REQUEST && resultCode == RESULT_OK && data != null) {
-            uploadImage(data.getData());
-        } else if (requestCode == CAMERA_IMAGE_REQUEST && resultCode == RESULT_OK) {
-            uploadImage(Uri.fromFile(getCameraFile()));
-        }
+            if (requestCode == 4 && resultCode == RESULT_OK) {
+                //Set Target Language
+                Log.e("target lang", data.getStringExtra("result"));
+                mTargetLanguage = data.getStringExtra("result");
+            } else if (requestCode == GALLERY_IMAGE_REQUEST && resultCode == RESULT_OK) {
+                uploadImage(data.getData());
+            } else if (requestCode == CAMERA_IMAGE_REQUEST && resultCode == RESULT_OK) {
+                uploadImage(Uri.fromFile(getCameraFile()));
+            }
     }
 
     @Override
@@ -296,11 +302,11 @@ public class MainActivity extends AppCompatActivity {
         // Instantiates a client
         Translate translate = TranslateOptions.builder().apiKey(API_KEY).build().service();
 
-        // Translates some text into Russian
+        // Translates some text from English into target language
         Translation translation = translate.translate(
                 toTranslate,
                 TranslateOption.sourceLanguage("en"),
-                TranslateOption.targetLanguage("es")
+                TranslateOption.targetLanguage(mTargetLanguage)
         );
 
         return translation.translatedText();

@@ -1,9 +1,8 @@
 package com.rahobbs.pictonary;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -27,6 +26,10 @@ public class LanguagePickerActivity extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> av, View view, int i, long l) {
                 Toast.makeText(getApplicationContext(), "myPos "+i, Toast.LENGTH_LONG).show();
+                Intent returnIntent = new Intent();
+                returnIntent.putExtra("result", getResources().getStringArray(R.array.lang_array)[i]);
+                setResult(Activity.RESULT_OK,returnIntent);
+                finish();
             }
         });
 
