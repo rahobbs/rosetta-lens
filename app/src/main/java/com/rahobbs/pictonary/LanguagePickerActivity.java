@@ -8,7 +8,6 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.Toast;
 
 public class LanguagePickerActivity extends AppCompatActivity {
 
@@ -25,7 +24,6 @@ public class LanguagePickerActivity extends AppCompatActivity {
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> av, View view, int i, long l) {
-                Toast.makeText(getApplicationContext(), "myPos "+i, Toast.LENGTH_LONG).show();
                 Intent returnIntent = new Intent();
                 returnIntent.putExtra("result", getResources().getStringArray(R.array.lang_array)[i]);
                 setResult(Activity.RESULT_OK,returnIntent);
