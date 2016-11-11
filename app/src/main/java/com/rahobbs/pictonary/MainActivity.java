@@ -78,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView mTargetLangLabel;
     private ImageView mMainImage;
 
-    private String mTargetLanguage = "es";
+    private String mTargetLanguage = "Spanish";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -125,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
         mMainImage = (ImageView) findViewById(R.id.main_image);
         mTargetLangLabel = (TextView) findViewById(R.id.target_lang_text);
 
-        mTargetLangLabel.setText("Currently translating to " + getLanguageLabel(mTargetLanguage));
+        mTargetLangLabel.setText("Currently translating to " + mTargetLanguage);
     }
 
     /** Called when the user clicks the select language button */
@@ -166,7 +166,7 @@ public class MainActivity extends AppCompatActivity {
                 //Set Target Language
                 Log.e("target lang", data.getStringExtra("result"));
                 mTargetLanguage = data.getStringExtra("result");
-                mTargetLangLabel.setText("Currently translating to " + getLanguageLabel(mTargetLanguage));
+                mTargetLangLabel.setText("Currently translating to " +mTargetLanguage);
             } else if (requestCode == GALLERY_IMAGE_REQUEST && resultCode == RESULT_OK) {
                 uploadImage(data.getData());
             } else if (requestCode == CAMERA_IMAGE_REQUEST && resultCode == RESULT_OK) {
@@ -323,21 +323,21 @@ public class MainActivity extends AppCompatActivity {
         Translation translation = translate.translate(
                 toTranslate,
                 TranslateOption.sourceLanguage("en"),
-                TranslateOption.targetLanguage(mTargetLanguage)
+                TranslateOption.targetLanguage(getLanguageCode(mTargetLanguage))
         );
 
         return translation.translatedText();
     }
 
-    public String getLanguageLabel(String languageCode){
+    public String getLanguageCode(String languageCode){
         switch(languageCode) {
-            case "es": return "Spanish";
-            case "fr": return "French";
-            case "ja": return "Japanese";
-            case "ko": return "Korean";
-            case "de": return "German";
-            case "zh-CN": return "Simplified Chinese";
-            case "ru": return "Russian";
+            case "Spanish": return "es";
+            case "French": return "fr";
+            case "Japanese": return "ja";
+            case "Korean": return "ko";
+            case "German": return "de";
+            case "Chinese": return "zh-CN";
+            case "Russian": return "ru";
             default: return "Invalid language";
         }
     }
