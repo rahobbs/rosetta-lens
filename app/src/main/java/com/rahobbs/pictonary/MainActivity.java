@@ -22,6 +22,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
+import android.hardware.Camera;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -35,6 +36,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -76,11 +78,13 @@ public class MainActivity extends AppCompatActivity {
     public static final int CAMERA_IMAGE_REQUEST = 3;
     public static final int LANGUAGE_PICKER_REQUEST = 4;
 
+    private Camera mCamera;
+    private CameraPreview mPreview;
+    private Bitmap mBitmap;
 
-
-    private TextView mImageDetails;
     private TextView mTargetLangLabel;
-    private ImageView mMainImage;
+    private TextView mImageDetails;
+    private ImageView mImageView;
 
     private String mTargetLanguage = "Spanish";
 
@@ -92,6 +96,7 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         Spinner spinner = (Spinner) findViewById(R.id.language_spinner);
+
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
@@ -137,14 +142,35 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // Create an instance of Camera
+        mCamera = getCameraInstance();
+        mCamera.setDisplayOrientation(90);
+
+        // Create our Preview view and set it as the content of our activity.
+        mPreview = new CameraPreview(this, mCamera);
+        FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
+        preview.addView(mPreview);
+
+        preview.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        // get an image from the camera
+                        startCamera();
+                    }
+                }
+        );
+
         mImageDetails = (TextView) findViewById(R.id.image_details);
-        mMainImage = (ImageView) findViewById(R.id.main_image);
         mTargetLangLabel = (TextView) findViewById(R.id.target_lang_text);
 
         mTargetLangLabel.setText(R.string.currently_translating_to);
     }
 
-
+    @Override
+    protected void onPause() {
+        super.onPause();
+    }
 
     public void startGalleryChooser() {
         Intent intent = new Intent();
@@ -166,6 +192,19 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * A safe way to get an instance of the Camera object.
+     */
+    public static Camera getCameraInstance() {
+        Camera c = null;
+        try {
+            c = Camera.open(); // attempt to get a Camera instance
+        } catch (Exception e) {
+            // Camera is not available (in use or does not exist)
+        }
+        return c; // returns null if camera is unavailable
+    }
+
     public File getCameraFile() {
         File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
         return new File(dir, FILE_NAME);
@@ -182,7 +221,12 @@ public class MainActivity extends AppCompatActivity {
             } else if (requestCode == GALLERY_IMAGE_REQUEST && resultCode == RESULT_OK) {
                 uploadImage(data.getData());
             } else if (requestCode == CAMERA_IMAGE_REQUEST && resultCode == RESULT_OK) {
-                uploadImage(Uri.fromFile(getCameraFile()));
+            uploadImage(Uri.fromFile(getCameraFile()));
+            //TODO: show image once it is selected/taken, hide camera preview
+            mPreview.setVisibility(View.INVISIBLE);
+            mImageView = (ImageView) findViewById(R.id.image_view);
+            mImageView.setImageBitmap(mBitmap);
+
             }
     }
 
@@ -202,13 +246,19 @@ public class MainActivity extends AppCompatActivity {
         if (uri != null) {
             try {
                 // scale the image to save on bandwidth
-                Bitmap bitmap =
+                mBitmap =
                         scaleBitmapDown(
                                 MediaStore.Images.Media.getBitmap(getContentResolver(), uri),
                                 1200);
 
-                callCloudVision(bitmap);
-                mMainImage.setImageBitmap(bitmap);
+
+                //TODO: show image once it is selected/taken, hide camera preview
+                mPreview.setVisibility(View.INVISIBLE);
+                ImageView mImageView = (ImageView) findViewById(R.id.image_view);
+                mImageView.setImageBitmap(mBitmap);
+
+                callCloudVision(mBitmap);
+
 
             } catch (IOException e) {
                 Log.d(TAG, "Image picking failed because " + e.getMessage());
