@@ -17,6 +17,7 @@
 package com.rahobbs.pictonary;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.ColorStateList;
@@ -32,7 +33,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -70,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int GALLERY_IMAGE_REQUEST = 1;
     public static final int CAMERA_PERMISSIONS_REQUEST = 2;
     public static final int CAMERA_IMAGE_REQUEST = 3;
-    public static final int LANGUAGE_PICKER_REQEUST = 4;
+    public static final int LANGUAGE_PICKER_REQUEST = 4;
 
 
 
@@ -86,6 +90,28 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        Spinner spinner = (Spinner) findViewById(R.id.language_spinner);
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
+                mTargetLanguage = parentView.getItemAtPosition(position).toString();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parentView) {
+                // your code here
+            }
+
+        });
+        // Create an ArrayAdapter using the string array and a default spinner layout
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+                R.array.lang_array, android.R.layout.simple_spinner_item);
+        // Specify the layout to use when the list of choices appears
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        // Apply the adapter to the spinner
+        spinner.setAdapter(adapter);
+
 
         //Image selection FAB
         FloatingActionButton imageFab = (FloatingActionButton) findViewById(R.id.imageFab);
@@ -111,28 +137,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        //Language selection FAB
-        FloatingActionButton languageFab = (FloatingActionButton) findViewById(R.id.languageFab);
-        languageFab.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.colorPrimaryDark)));
-        languageFab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                launchLanguagePicker(view);
-            }
-        });
-
         mImageDetails = (TextView) findViewById(R.id.image_details);
         mMainImage = (ImageView) findViewById(R.id.main_image);
         mTargetLangLabel = (TextView) findViewById(R.id.target_lang_text);
 
-        mTargetLangLabel.setText("Currently translating to " + mTargetLanguage);
+        mTargetLangLabel.setText(R.string.currently_translating_to);
     }
 
-    /** Called when the user clicks the select language button */
-    public void launchLanguagePicker(View view) {
-        Intent intent = new Intent(this, LanguagePickerActivity.class);
-        startActivityForResult(intent, LANGUAGE_PICKER_REQEUST);
-    }
+
 
     public void startGalleryChooser() {
         Intent intent = new Intent();
@@ -162,11 +174,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-            if (requestCode == 4 && resultCode == RESULT_OK) {
+        if (requestCode == LANGUAGE_PICKER_REQUEST && resultCode == RESULT_OK) {
                 //Set Target Language
                 Log.e("target lang", data.getStringExtra("result"));
                 mTargetLanguage = data.getStringExtra("result");
-                mTargetLangLabel.setText("Currently translating to " +mTargetLanguage);
+            mTargetLangLabel.setText(R.string.currently_translating_to);
             } else if (requestCode == GALLERY_IMAGE_REQUEST && resultCode == RESULT_OK) {
                 uploadImage(data.getData());
             } else if (requestCode == CAMERA_IMAGE_REQUEST && resultCode == RESULT_OK) {
@@ -317,7 +329,7 @@ public class MainActivity extends AppCompatActivity {
 
     public String translateText(String toTranslate) {
         // Instantiates a client
-        Translate translate = TranslateOptions.builder().apiKey(API_KEY).build().service();
+        Translate translate = TranslateOptions.newBuilder().setApiKey(API_KEY).build().getService();
 
         // Translates some text from English into target language
         Translation translation = translate.translate(
@@ -326,7 +338,7 @@ public class MainActivity extends AppCompatActivity {
                 TranslateOption.targetLanguage(getLanguageCode(mTargetLanguage))
         );
 
-        return translation.translatedText();
+        return translation.getTranslatedText();
     }
 
     public String getLanguageCode(String languageCode){
@@ -336,7 +348,6 @@ public class MainActivity extends AppCompatActivity {
             case "Japanese": return "ja";
             case "Korean": return "ko";
             case "German": return "de";
-            case "Chinese": return "zh-CN";
             case "Russian": return "ru";
             default: return "Invalid language";
         }

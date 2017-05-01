@@ -36,20 +36,8 @@
             android:layout_height="wrap_content"
             android:layout_gravity="end|bottom"
             android:src="@drawable/ic_panorama_black_24dp"
-            android:layout_alignParentBottom="true"
-            android:layout_alignLeft="@+id/languageFab"
-            android:layout_alignStart="@+id/languageFab"/>
+            android:layout_alignParentBottom="true" />
 
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/languageFab"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end|bottom"
-            android:src="@drawable/ic_translate_black_24dp"
-            android:layout_above="@+id/imageFab"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:layout_marginBottom="8dp"/>
     </RelativeLayout>
 
 </android.support.design.widget.CoordinatorLayout>

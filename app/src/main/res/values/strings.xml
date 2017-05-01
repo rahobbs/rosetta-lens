@@ -5,12 +5,13 @@
     <string name="image_preview_header">Preview:</string>
     <string name="loading_message">Uploading image. Please wait.</string>
 
+    <string name="currently_translating_to">Currently translating to</string>
     <string name="dialog_select_prompt">Choose a picture</string>
     <string name="dialog_select_camera">Camera</string>
     <string name="dialog_select_gallery">Gallery</string>
 
     <string name="image_picker_error">Something is wrong with that image. Pick a different one please.</string>
-    <string name="title_activity_language_picker">LanguagePickerActivity</string>
+    <string name="title_activity_language_picker">Select a Language</string>
 
     <string-array name="lang_array">
         <item>Spanish</item>
@@ -18,7 +19,6 @@
         <item>Japanese</item>
         <item>Korean</item>
         <item>German</item>
-        <item>Simplified Chinese</item>
         <item>Russian</item>
 
     </string-array>
