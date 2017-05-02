@@ -82,9 +82,9 @@ public class MainActivity extends AppCompatActivity {
     private CameraPreview mPreview;
     private Bitmap mBitmap;
 
-    private TextView mTargetLangLabel;
     private TextView mImageDetails;
     private ImageView mImageView;
+    private ImageView mShutterButton;
 
     private String mTargetLanguage = "Spanish";
 
@@ -92,32 +92,40 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
 
-        Spinner spinner = (Spinner) findViewById(R.id.language_spinner);
-
-        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
-                mTargetLanguage = parentView.getItemAtPosition(position).toString();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parentView) {
-                // your code here
-            }
-
-        });
-        // Create an ArrayAdapter using the string array and a default spinner layout
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
-                R.array.lang_array, android.R.layout.simple_spinner_item);
-        // Specify the layout to use when the list of choices appears
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        // Apply the adapter to the spinner
-        spinner.setAdapter(adapter);
+        setupLanguageSpinner();
+        setupFAB();
+        setupCameraPreview();
 
 
+        mImageDetails = (TextView) findViewById(R.id.image_details);
+        mShutterButton = (ImageView) findViewById(R.id.shutter_button);
+    }
+
+    private void setupCameraPreview() {
+        // Create an instance of Camera
+        mCamera = getCameraInstance();
+        mCamera.setDisplayOrientation(90);
+
+        // Create our Preview view and set it as the content of our activity.
+        mPreview = new CameraPreview(this, mCamera);
+
+        FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
+
+        preview.addView(mPreview);
+
+        preview.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        // get an image from the camera
+                        startCamera();
+                    }
+                }
+        );
+    }
+
+    private void setupFAB() {
         //Image selection FAB
         FloatingActionButton imageFab = (FloatingActionButton) findViewById(R.id.imageFab);
         imageFab.setOnClickListener(new View.OnClickListener() {
@@ -141,30 +149,30 @@ public class MainActivity extends AppCompatActivity {
                 builder.create().show();
             }
         });
+    }
 
-        // Create an instance of Camera
-        mCamera = getCameraInstance();
-        mCamera.setDisplayOrientation(90);
+    private void setupLanguageSpinner() {
+        Spinner spinner = (Spinner) findViewById(R.id.language_spinner);
 
-        // Create our Preview view and set it as the content of our activity.
-        mPreview = new CameraPreview(this, mCamera);
-        FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
-        preview.addView(mPreview);
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
+                mTargetLanguage = parentView.getItemAtPosition(position).toString();
+            }
 
-        preview.setOnClickListener(
-                new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        // get an image from the camera
-                        startCamera();
-                    }
-                }
-        );
+            @Override
+            public void onNothingSelected(AdapterView<?> parentView) {
+                // your code here
+            }
 
-        mImageDetails = (TextView) findViewById(R.id.image_details);
-        mTargetLangLabel = (TextView) findViewById(R.id.target_lang_text);
-
-        mTargetLangLabel.setText(R.string.currently_translating_to);
+        });
+        // Create an ArrayAdapter using the string array and a default spinner layout
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+                R.array.lang_array, android.R.layout.simple_spinner_item);
+        // Specify the layout to use when the list of choices appears
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        // Apply the adapter to the spinner
+        spinner.setAdapter(adapter);
     }
 
     @Override
@@ -217,7 +225,6 @@ public class MainActivity extends AppCompatActivity {
                 //Set Target Language
                 Log.e("target lang", data.getStringExtra("result"));
                 mTargetLanguage = data.getStringExtra("result");
-            mTargetLangLabel.setText(R.string.currently_translating_to);
             } else if (requestCode == GALLERY_IMAGE_REQUEST && resultCode == RESULT_OK) {
                 uploadImage(data.getData());
             } else if (requestCode == CAMERA_IMAGE_REQUEST && resultCode == RESULT_OK) {
@@ -228,6 +235,12 @@ public class MainActivity extends AppCompatActivity {
             mImageView.setImageBitmap(mBitmap);
 
             }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        setupCameraPreview();
     }
 
     @Override
