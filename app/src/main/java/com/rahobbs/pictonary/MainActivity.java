@@ -22,6 +22,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.hardware.Camera;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -34,6 +36,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
@@ -71,6 +74,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static android.R.attr.angle;
 import static com.rahobbs.pictonary.Constants.API_KEY;
 
 public class MainActivity extends AppCompatActivity {
@@ -85,10 +89,12 @@ public class MainActivity extends AppCompatActivity {
     private Camera mCamera;
     private CameraPreview mPreview;
     private Bitmap mBitmap;
+    private Bitmap mScaledBitmap;
 
     private TextView mImageDetails;
     private ImageView mImageView;
     private ImageView mShutterButton;
+    private FrameLayout mImageFrame;
 
     private String mTargetLanguage = "Spanish";
 
@@ -101,11 +107,12 @@ public class MainActivity extends AppCompatActivity {
         setupFAB();
         setupCameraPreview();
 
-
+        mImageFrame = (FrameLayout) findViewById(R.id.image_frame);
         mImageDetails = (TextView) findViewById(R.id.image_details);
         mShutterButton = (ImageView) findViewById(R.id.shutter_button);
 
         mShutterButton.setOnClickListener(
+
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -210,28 +217,40 @@ public class MainActivity extends AppCompatActivity {
                 Manifest.permission.CAMERA)) {
 
             //TODO: Get taking picture from preview working
-//            mCamera.takePicture(null, null, new Camera.PictureCallback() {
-//                @Override
-//                public void onPictureTaken(byte[] data, Camera camera) {
-//                    File pictureFile = getOutputMediaFile();
-//                    if (pictureFile == null) {
-//                        return;
-//                    }
-//                    try {
-//                        FileOutputStream fos = new FileOutputStream(pictureFile);
-//                        fos.write(data);
-//                        fos.close();
-//                    } catch (FileNotFoundException e) {
-//
-//                    } catch (IOException e) {
-//                    }
-//                }
-//            });
-            //TODO: Only send an image capture intent when gallery button is pushed
-            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(getCameraFile()));
-            startActivityForResult(intent, CAMERA_IMAGE_REQUEST);
+            mCamera.takePicture(null, null, new Camera.PictureCallback() {
+                @Override
+                public void onPictureTaken(byte[] data, Camera camera) {
+                    File pictureFile = getOutputMediaFile();
+                    if (pictureFile == null) {
+                        return;
+                    }
+                    try {
+                        FileOutputStream fos = new FileOutputStream(pictureFile);
+                        fos.write(data);
+                        fos.close();
+                        mBitmap = BitmapFactory.decodeFile(pictureFile.getAbsolutePath());
+
+                        uploadImage(Uri.fromFile(pictureFile));
+
+                        transitionToResponseView();
+
+                    } catch (FileNotFoundException e) {
+
+                    } catch (IOException e) {
+                    }
+                }
+            });
         }
+    }
+
+    private void transitionToResponseView() {
+        mPreview.setVisibility(View.INVISIBLE);
+        mImageView = (ImageView) findViewById(R.id.image_view);
+        mImageView.setImageBitmap(mBitmap);
+
+        ViewGroup.LayoutParams params = mImageFrame.getLayoutParams();
+        params.height = 350;
+        mImageFrame.setLayoutParams(params);
     }
 
     private static File getOutputMediaFile() {
@@ -285,9 +304,8 @@ public class MainActivity extends AppCompatActivity {
             } else if (requestCode == CAMERA_IMAGE_REQUEST && resultCode == RESULT_OK) {
             uploadImage(Uri.fromFile(getCameraFile()));
 
-            mPreview.setVisibility(View.INVISIBLE);
-            mImageView = (ImageView) findViewById(R.id.image_view);
-            mImageView.setImageBitmap(mBitmap);
+            transitionToResponseView();
+
 
         } else {
             setupCameraPreview();
@@ -310,19 +328,17 @@ public class MainActivity extends AppCompatActivity {
     public void uploadImage(Uri uri) {
         if (uri != null) {
             try {
+                mBitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
                 // scale the image to save on bandwidth
-                mBitmap =
-                        scaleBitmapDown(
-                                MediaStore.Images.Media.getBitmap(getContentResolver(), uri),
-                                1200);
+                mScaledBitmap =
+                        scaleBitmapDown(mBitmap, 1200);
 
 
-                //TODO: show image once it is selected/taken, hide camera preview
                 mPreview.setVisibility(View.INVISIBLE);
                 ImageView mImageView = (ImageView) findViewById(R.id.image_view);
                 mImageView.setImageBitmap(mBitmap);
 
-                callCloudVision(mBitmap);
+                callCloudVision(mScaledBitmap);
 
 
             } catch (IOException e) {

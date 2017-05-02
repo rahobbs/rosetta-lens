@@ -9,11 +9,9 @@
     tools:showIn="@layout/activity_main">
 
 
-
-
     <FrameLayout
         android:id="@+id/image_frame"
-        android:layout_height="350dp"
+        android:layout_height="match_parent"
         android:layout_width="match_parent">
 
         <FrameLayout
@@ -36,8 +34,6 @@
             android:padding="8dp"
             android:src="@drawable/ic_camera_black_24dp"
             android:layout_gravity="bottom" />
-
-
     </FrameLayout>
 
 
@@ -61,13 +57,14 @@
         android:layout_marginBottom="16dp"
         android:text="Select an image to get translations..."
         android:layout_below="@id/image_frame"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        android:elevation="3dp" />
 
     <GridView xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_alignTop="@id/image_details"
-        android:id="@+id/gridview"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:id="@+id/gallery_grid_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:columnWidth="90dp"
         android:numColumns="auto_fit"
