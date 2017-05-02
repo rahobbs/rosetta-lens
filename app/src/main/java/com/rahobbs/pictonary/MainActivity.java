@@ -17,10 +17,12 @@
 package com.rahobbs.pictonary;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
+import android.hardware.Camera;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -32,7 +34,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -70,13 +76,15 @@ public class MainActivity extends AppCompatActivity {
     private static final int GALLERY_IMAGE_REQUEST = 1;
     public static final int CAMERA_PERMISSIONS_REQUEST = 2;
     public static final int CAMERA_IMAGE_REQUEST = 3;
-    public static final int LANGUAGE_PICKER_REQEUST = 4;
+    public static final int LANGUAGE_PICKER_REQUEST = 4;
 
+    private Camera mCamera;
+    private CameraPreview mPreview;
+    private Bitmap mBitmap;
 
-
-    private TextView mImageDetails;
     private TextView mTargetLangLabel;
-    private ImageView mMainImage;
+    private TextView mImageDetails;
+    private ImageView mImageView;
 
     private String mTargetLanguage = "Spanish";
 
@@ -86,6 +94,29 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        Spinner spinner = (Spinner) findViewById(R.id.language_spinner);
+
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
+                mTargetLanguage = parentView.getItemAtPosition(position).toString();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parentView) {
+                // your code here
+            }
+
+        });
+        // Create an ArrayAdapter using the string array and a default spinner layout
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+                R.array.lang_array, android.R.layout.simple_spinner_item);
+        // Specify the layout to use when the list of choices appears
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        // Apply the adapter to the spinner
+        spinner.setAdapter(adapter);
+
 
         //Image selection FAB
         FloatingActionButton imageFab = (FloatingActionButton) findViewById(R.id.imageFab);
@@ -111,27 +142,34 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        //Language selection FAB
-        FloatingActionButton languageFab = (FloatingActionButton) findViewById(R.id.languageFab);
-        languageFab.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.colorPrimaryDark)));
-        languageFab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                launchLanguagePicker(view);
-            }
-        });
+        // Create an instance of Camera
+        mCamera = getCameraInstance();
+        mCamera.setDisplayOrientation(90);
+
+        // Create our Preview view and set it as the content of our activity.
+        mPreview = new CameraPreview(this, mCamera);
+        FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
+        preview.addView(mPreview);
+
+        preview.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        // get an image from the camera
+                        startCamera();
+                    }
+                }
+        );
 
         mImageDetails = (TextView) findViewById(R.id.image_details);
-        mMainImage = (ImageView) findViewById(R.id.main_image);
         mTargetLangLabel = (TextView) findViewById(R.id.target_lang_text);
 
-        mTargetLangLabel.setText("Currently translating to " + mTargetLanguage);
+        mTargetLangLabel.setText(R.string.currently_translating_to);
     }
 
-    /** Called when the user clicks the select language button */
-    public void launchLanguagePicker(View view) {
-        Intent intent = new Intent(this, LanguagePickerActivity.class);
-        startActivityForResult(intent, LANGUAGE_PICKER_REQEUST);
+    @Override
+    protected void onPause() {
+        super.onPause();
     }
 
     public void startGalleryChooser() {
@@ -154,6 +192,19 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * A safe way to get an instance of the Camera object.
+     */
+    public static Camera getCameraInstance() {
+        Camera c = null;
+        try {
+            c = Camera.open(); // attempt to get a Camera instance
+        } catch (Exception e) {
+            // Camera is not available (in use or does not exist)
+        }
+        return c; // returns null if camera is unavailable
+    }
+
     public File getCameraFile() {
         File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
         return new File(dir, FILE_NAME);
@@ -162,15 +213,20 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-            if (requestCode == 4 && resultCode == RESULT_OK) {
+        if (requestCode == LANGUAGE_PICKER_REQUEST && resultCode == RESULT_OK) {
                 //Set Target Language
                 Log.e("target lang", data.getStringExtra("result"));
                 mTargetLanguage = data.getStringExtra("result");
-                mTargetLangLabel.setText("Currently translating to " +mTargetLanguage);
+            mTargetLangLabel.setText(R.string.currently_translating_to);
             } else if (requestCode == GALLERY_IMAGE_REQUEST && resultCode == RESULT_OK) {
                 uploadImage(data.getData());
             } else if (requestCode == CAMERA_IMAGE_REQUEST && resultCode == RESULT_OK) {
-                uploadImage(Uri.fromFile(getCameraFile()));
+            uploadImage(Uri.fromFile(getCameraFile()));
+            //TODO: show image once it is selected/taken, hide camera preview
+            mPreview.setVisibility(View.INVISIBLE);
+            mImageView = (ImageView) findViewById(R.id.image_view);
+            mImageView.setImageBitmap(mBitmap);
+
             }
     }
 
@@ -190,13 +246,19 @@ public class MainActivity extends AppCompatActivity {
         if (uri != null) {
             try {
                 // scale the image to save on bandwidth
-                Bitmap bitmap =
+                mBitmap =
                         scaleBitmapDown(
                                 MediaStore.Images.Media.getBitmap(getContentResolver(), uri),
                                 1200);
 
-                callCloudVision(bitmap);
-                mMainImage.setImageBitmap(bitmap);
+
+                //TODO: show image once it is selected/taken, hide camera preview
+                mPreview.setVisibility(View.INVISIBLE);
+                ImageView mImageView = (ImageView) findViewById(R.id.image_view);
+                mImageView.setImageBitmap(mBitmap);
+
+                callCloudVision(mBitmap);
+
 
             } catch (IOException e) {
                 Log.d(TAG, "Image picking failed because " + e.getMessage());
@@ -317,7 +379,7 @@ public class MainActivity extends AppCompatActivity {
 
     public String translateText(String toTranslate) {
         // Instantiates a client
-        Translate translate = TranslateOptions.builder().apiKey(API_KEY).build().service();
+        Translate translate = TranslateOptions.newBuilder().setApiKey(API_KEY).build().getService();
 
         // Translates some text from English into target language
         Translation translation = translate.translate(
@@ -326,7 +388,7 @@ public class MainActivity extends AppCompatActivity {
                 TranslateOption.targetLanguage(getLanguageCode(mTargetLanguage))
         );
 
-        return translation.translatedText();
+        return translation.getTranslatedText();
     }
 
     public String getLanguageCode(String languageCode){
@@ -336,7 +398,6 @@ public class MainActivity extends AppCompatActivity {
             case "Japanese": return "ja";
             case "Korean": return "ko";
             case "German": return "de";
-            case "Chinese": return "zh-CN";
             case "Russian": return "ru";
             default: return "Invalid language";
         }

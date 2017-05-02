@@ -23,15 +23,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".LanguagePickerActivity"
-            android:label="@string/title_activity_language_picker"
-            android:parentActivityName=".MainActivity"
-            android:theme="@style/AppTheme.NoActionBar">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.rahobbs.pictonary.MainActivity" />
-        </activity>
     </application>
 
 </manifest>
