@@ -5,5 +5,5 @@
     android:textColor="#ffffff"
     android:shadowColor="#a4a2a2"
     android:drawablePadding="4dp"
-    android:drawableEnd="@drawable/ic_arrow_drop_down_black_24dp" />
+    android:drawableEnd="@drawable/ic_arrow_drop_down_white_24dp" />
 

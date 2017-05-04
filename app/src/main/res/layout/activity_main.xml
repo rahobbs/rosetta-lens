@@ -17,14 +17,6 @@
         android:layout_gravity="end|bottom" >
 
 
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/imageFab"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end|bottom"
-            android:src="@drawable/ic_panorama_black_24dp"
-            android:layout_alignParentBottom="true" />
-
     </RelativeLayout>
 
 </android.support.design.widget.CoordinatorLayout>

@@ -17,13 +17,10 @@
 package com.rahobbs.pictonary;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
 import android.graphics.PixelFormat;
 import android.hardware.Camera;
 import android.net.Uri;
@@ -34,10 +31,8 @@ import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
@@ -75,7 +70,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static android.R.attr.angle;
 import static com.rahobbs.pictonary.Constants.API_KEY;
 
 public class MainActivity extends AppCompatActivity {
@@ -95,6 +89,8 @@ public class MainActivity extends AppCompatActivity {
     private TextView mImageDetails;
     private ImageView mImageView;
     private ImageView mShutterButton;
+    private ImageView mGalleryButton;
+    private Boolean mIsPreviewMode = true;
 
     private String mTargetLanguage = "Spanish";
 
@@ -104,21 +100,48 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         setupLanguageSpinner();
-        setupFAB();
         setupCameraPreview();
 
         mImageDetails = (TextView) findViewById(R.id.image_details);
         mShutterButton = (ImageView) findViewById(R.id.shutter_button);
+        mGalleryButton = (ImageView) findViewById(R.id.gallery_button);
 
         mShutterButton.setOnClickListener(
 
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
+                        if (mIsPreviewMode == false) {
+                            transitiontoCameraView();
+                        }
                         startCamera();
                     }
                 }
         );
+
+        mGalleryButton.setOnClickListener(
+
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                        builder
+                                .setMessage(R.string.dialog_select_prompt)
+                                .setPositiveButton(R.string.dialog_select_gallery, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        startGalleryChooser();
+                                    }
+                                })
+                                .setNegativeButton(R.string.dialog_select_camera, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        startCamera();
+                                    }
+                                });
+                        builder.create().show();
+                    }
+                });
     }
 
     private void setupCameraPreview() {
@@ -132,43 +155,6 @@ public class MainActivity extends AppCompatActivity {
         FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
 
         preview.addView(mPreview);
-
-
-//        preview.setOnClickListener(
-//                new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View v) {
-//                        // get an image from the camera
-//                        startCamera();
-//                    }
-//                }
-//        );
-    }
-
-    private void setupFAB() {
-        //Image selection FAB
-        FloatingActionButton imageFab = (FloatingActionButton) findViewById(R.id.imageFab);
-        imageFab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                builder
-                        .setMessage(R.string.dialog_select_prompt)
-                        .setPositiveButton(R.string.dialog_select_gallery, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                startGalleryChooser();
-                            }
-                        })
-                        .setNegativeButton(R.string.dialog_select_camera, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                startCamera();
-                            }
-                        });
-                builder.create().show();
-            }
-        });
     }
 
     private void setupLanguageSpinner() {
@@ -216,7 +202,6 @@ public class MainActivity extends AppCompatActivity {
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
                 Manifest.permission.CAMERA)) {
 
-            //TODO: Get taking picture from preview working
             mCamera.takePicture(null, null, new Camera.PictureCallback() {
                 @Override
                 public void onPictureTaken(byte[] data, Camera camera) {
@@ -245,16 +230,21 @@ public class MainActivity extends AppCompatActivity {
 
     private void transitionToResponseView() {
         mPreview.setVisibility(View.INVISIBLE);
-        //mShutterButton.setVisibility(View.INVISIBLE);
-
-
-//        ViewGroup.LayoutParams params = mImageFrame.getLayoutParams();
-//        params.height = 500;
-//        mImageFrame.setLayoutParams(params);
 
         mImageView = (ImageView) findViewById(R.id.image_view);
         mImageView.setImageBitmap(mBitmap);
-        //mImageDetails.setVisibility(View.VISIBLE);
+        mShutterButton.setImageResource(R.drawable.ic_photo_camera_black_24dp);
+        mGalleryButton.setImageResource(R.drawable.gallery_panorama_black);
+        mIsPreviewMode = false;
+    }
+
+    public void transitiontoCameraView() {
+        mImageView.setVisibility(View.INVISIBLE);
+        mImageDetails.setText("");
+        mShutterButton.setImageResource(R.drawable.shutter_white);
+        mGalleryButton.setImageResource(R.drawable.gallery_panorama_white);
+        setupCameraPreview();
+        mIsPreviewMode = true;
 
     }
 
@@ -308,14 +298,14 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == LANGUAGE_PICKER_REQUEST && resultCode == RESULT_OK) {
-                //Set Target Language
-                Log.e("target lang", data.getStringExtra("result"));
-                mTargetLanguage = data.getStringExtra("result");
-            } else if (requestCode == GALLERY_IMAGE_REQUEST && resultCode == RESULT_OK) {
-                uploadImage(data.getData());
-            } else if (requestCode == CAMERA_IMAGE_REQUEST && resultCode == RESULT_OK) {
+            //Set Target Language
+            Log.e("target lang", data.getStringExtra("result"));
+            mTargetLanguage = data.getStringExtra("result");
+        } else if (requestCode == GALLERY_IMAGE_REQUEST && resultCode == RESULT_OK) {
+            uploadImage(data.getData());
+            transitionToResponseView();
+        } else if (requestCode == CAMERA_IMAGE_REQUEST && resultCode == RESULT_OK) {
             uploadImage(Uri.fromFile(getCameraFile()));
-
             transitionToResponseView();
 
 
@@ -347,7 +337,6 @@ public class MainActivity extends AppCompatActivity {
 
 
                 mPreview.setVisibility(View.INVISIBLE);
-                //mShutterButton.setVisibility(View.INVISIBLE);
                 ImageView mImageView = (ImageView) findViewById(R.id.image_view);
                 mImageView.setImageBitmap(mBitmap);
 
