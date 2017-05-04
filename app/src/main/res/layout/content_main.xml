@@ -10,68 +10,49 @@
 
 
     <FrameLayout
-        android:id="@+id/image_frame"
+        android:id="@+id/camera_preview"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_width="match_parent">
-
-        <FrameLayout
-            android:id="@+id/camera_preview"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="centerInside" />
-
-        <ImageView
-            android:id="@+id/image_view"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="centerInside" />
+        android:scaleType="fitCenter">
 
         <ImageView
             android:id="@+id/shutter_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
             android:elevation="3dp"
             android:padding="8dp"
-            android:src="@drawable/ic_camera_black_24dp"
-            android:layout_gravity="bottom" />
+            android:src="@drawable/ic_camera_black_24dp" />
     </FrameLayout>
 
+    <ImageView
+        android:id="@+id/image_view"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="36dp"
+        android:adjustViewBounds="true"
+        android:minHeight="500dp"
+        android:scaleType="fitCenter" />
 
     <Spinner
         android:id="@+id/language_spinner"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-        android:paddingTop="8dp"
         android:layout_alignParentEnd="true"
         android:layout_alignParentTop="true"
-        android:textAlignment="viewEnd"
-        tools:layout_constraintLeft_creator="1" />
+        android:background="@null"
+        android:paddingTop="16dp" />
 
 
     <TextView
         android:id="@+id/image_details"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAlignment="center"
-        android:layout_marginBottom="16dp"
-        android:text="Select an image to get translations..."
-        android:layout_below="@id/image_frame"
+        android:layout_below="@id/image_view"
         android:layout_centerHorizontal="true"
-        android:elevation="3dp" />
-
-    <GridView xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_alignTop="@id/image_details"
-        android:id="@+id/gallery_grid_view"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:columnWidth="90dp"
-        android:numColumns="auto_fit"
-        android:verticalSpacing="10dp"
-        android:horizontalSpacing="10dp"
-        android:stretchMode="columnWidth"
-        android:gravity="center" />
+        android:elevation="3dp"
+        android:text=""
+        android:textAlignment="center" />
 
 
 </RelativeLayout>

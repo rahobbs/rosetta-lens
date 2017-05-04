@@ -1,7 +1,9 @@
 <TextView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
+    android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:textAlignment="viewEnd"
     android:textSize="20sp"
     android:textColor="#ffffff"
-    android:shadowColor="#d4d1d1" />
+    android:shadowColor="#a4a2a2"
+    android:drawablePadding="4dp"
+    android:drawableEnd="@drawable/ic_arrow_drop_down_black_24dp" />
+

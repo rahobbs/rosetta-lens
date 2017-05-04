@@ -24,6 +24,7 @@ import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.graphics.PixelFormat;
 import android.hardware.Camera;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -94,7 +95,6 @@ public class MainActivity extends AppCompatActivity {
     private TextView mImageDetails;
     private ImageView mImageView;
     private ImageView mShutterButton;
-    private FrameLayout mImageFrame;
 
     private String mTargetLanguage = "Spanish";
 
@@ -107,7 +107,6 @@ public class MainActivity extends AppCompatActivity {
         setupFAB();
         setupCameraPreview();
 
-        mImageFrame = (FrameLayout) findViewById(R.id.image_frame);
         mImageDetails = (TextView) findViewById(R.id.image_details);
         mShutterButton = (ImageView) findViewById(R.id.shutter_button);
 
@@ -133,6 +132,7 @@ public class MainActivity extends AppCompatActivity {
         FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
 
         preview.addView(mPreview);
+
 
 //        preview.setOnClickListener(
 //                new View.OnClickListener() {
@@ -245,12 +245,17 @@ public class MainActivity extends AppCompatActivity {
 
     private void transitionToResponseView() {
         mPreview.setVisibility(View.INVISIBLE);
+        //mShutterButton.setVisibility(View.INVISIBLE);
+
+
+//        ViewGroup.LayoutParams params = mImageFrame.getLayoutParams();
+//        params.height = 500;
+//        mImageFrame.setLayoutParams(params);
+
         mImageView = (ImageView) findViewById(R.id.image_view);
         mImageView.setImageBitmap(mBitmap);
+        //mImageDetails.setVisibility(View.VISIBLE);
 
-        ViewGroup.LayoutParams params = mImageFrame.getLayoutParams();
-        params.height = 350;
-        mImageFrame.setLayoutParams(params);
     }
 
     private static File getOutputMediaFile() {
@@ -281,6 +286,13 @@ public class MainActivity extends AppCompatActivity {
         Camera c = null;
         try {
             c = Camera.open(); // attempt to get a Camera instance
+            Camera.Parameters parameters = c.getParameters();
+            parameters.set("jpeg-quality", 70);
+            parameters.setPictureFormat(PixelFormat.JPEG);
+            parameters.setPictureSize(2048, 1232);
+            //parameters.setRotation(90);
+
+            c.setParameters(parameters);
         } catch (Exception e) {
             // Camera is not available (in use or does not exist)
         }
@@ -335,6 +347,7 @@ public class MainActivity extends AppCompatActivity {
 
 
                 mPreview.setVisibility(View.INVISIBLE);
+                //mShutterButton.setVisibility(View.INVISIBLE);
                 ImageView mImageView = (ImageView) findViewById(R.id.image_view);
                 mImageView.setImageBitmap(mBitmap);
 
